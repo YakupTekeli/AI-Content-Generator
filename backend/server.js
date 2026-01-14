@@ -1,19 +1,39 @@
-const express = require("express");
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const connectDB = require('./config/db');
+
+// Load env vars
+dotenv.config();
+
+// Connect to database
+// Note: This relies on MongoDB being available. 
+// If it's not running, the app will crash/exit on start as per config/db.j logic
+connectDB();
+
 const app = express();
-const PORT = 3000;
 
-// OpenAI configuration
-const openaiClient = require("./config/openai");
-
-const contentRoutes = require("./routes/contentRoutes");
-
+// Middleware
+app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
 app.use(express.json());
-app.use("/api/content", contentRoutes);
 
-app.get("/", (req, res) => {
-  res.send("AI Content Generator Backend is Running!");
+// Routes
+const authRoutes = require('./routes/authRoutes');
+const contentRoutes = require('./routes/contentRoutes');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/content', contentRoutes);
+
+app.get('/', (req, res) => {
+  res.send('AI Content Generator API is running...');
 });
 
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
