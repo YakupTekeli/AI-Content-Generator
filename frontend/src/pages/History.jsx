@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Calendar, FileText } from 'lucide-react';
+import { Calendar, FileText, Share2 } from 'lucide-react';
 
 const History = () => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [shareMessage, setShareMessage] = useState('');
+    const [shareError, setShareError] = useState('');
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -26,9 +28,26 @@ const History = () => {
 
     if (loading) return <div className="text-center py-10">Loading history...</div>;
 
+    const handleShare = async (contentId) => {
+        setShareMessage('');
+        setShareError('');
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            const { data } = await axios.post('/api/shares', { contentId, type: 'content' }, config);
+            if (data.success) {
+                setShareMessage('Content shared to community.');
+            }
+        } catch (error) {
+            setShareError(error.response?.data?.message || 'Failed to share content');
+        }
+    };
+
     return (
         <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-8">Learning History</h1>
+            {shareMessage && <div className="bg-green-50 text-green-700 p-3 rounded-lg mb-4 text-sm">{shareMessage}</div>}
+            {shareError && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{shareError}</div>}
 
             {history.length === 0 ? (
                 <div className="text-center py-10 text-gray-500">No content generated yet. Go create something!</div>
@@ -53,7 +72,14 @@ const History = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {/* Could add a 'view' button here to open modal */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleShare(item._id)}
+                                    className="text-indigo-600 hover:text-indigo-700 flex items-center space-x-1 text-sm"
+                                >
+                                    <Share2 className="h-4 w-4" />
+                                    <span>Share</span>
+                                </button>
                             </div>
                         </div>
                     ))}

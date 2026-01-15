@@ -15,6 +15,9 @@ const RegisterPage = () => {
         setError('');
         const result = await register(name, email, password);
         if (result.success) {
+            if (result.user?._id) {
+                localStorage.setItem(`resetKeyAlert:${result.user._id}`, 'true');
+            }
             navigate('/dashboard'); // Or profile to set interests
         } else {
             setError(result.message);

@@ -1,5 +1,36 @@
 const contentService = require('../services/contentService');
+const progressService = require('../services/progressService');
 const Content = require('../models/Content');
+const AiSettings = require('../models/AiSettings');
+
+const normalizeKeywords = (input) => {
+  if (!input) return [];
+  if (Array.isArray(input)) {
+    return input.map((keyword) => String(keyword).trim()).filter(Boolean);
+  }
+  if (typeof input === 'string') {
+    return input.split(',').map((keyword) => keyword.trim()).filter(Boolean);
+  }
+  return [];
+};
+
+const containsRestrictedTopic = (text, restrictedTopics) => {
+  if (!text || restrictedTopics.length === 0) return false;
+  const normalized = String(text).toLowerCase();
+  return restrictedTopics.some((topic) => normalized.includes(topic.toLowerCase()));
+};
+
+const isRestricted = ({ topic, keywords, interests }, restrictedTopics) => {
+  if (!restrictedTopics || restrictedTopics.length === 0) return false;
+  if (containsRestrictedTopic(topic, restrictedTopics)) return true;
+  if (Array.isArray(keywords) && keywords.some((keyword) => containsRestrictedTopic(keyword, restrictedTopics))) {
+    return true;
+  }
+  if (Array.isArray(interests) && interests.some((interest) => containsRestrictedTopic(interest, restrictedTopics))) {
+    return true;
+  }
+  return false;
+};
 
 // @desc    Generate new content
 // @route   POST /api/content/generate
@@ -7,10 +38,26 @@ const Content = require('../models/Content');
 exports.generateContent = async (req, res) => {
   try {
     const { topic, level, type, language } = req.body;
+    const interests = Array.isArray(req.user?.interests) ? req.user.interests : [];
+    const keywords = normalizeKeywords(req.body.keywords);
+    const aiSettings = await AiSettings.findOne();
+    const restrictedTopics = aiSettings?.restrictedTopics || [];
+
+    if (isRestricted({ topic, keywords, interests }, restrictedTopics)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Requested topic is restricted by admin settings'
+      });
+    }
 
     // Call service to generate content (OpenAI)
     // Note: difficulty was in the original code, but level is usually enough. keeping it if needed.
-    const generatedData = await contentService.generate(req.body);
+    const generatedData = await contentService.generate({
+      ...req.body,
+      interests,
+      keywords,
+      aiSettings
+    });
 
     // Create Content record
     const content = await Content.create({
@@ -18,15 +65,21 @@ exports.generateContent = async (req, res) => {
       topic,
       level,
       type,
+      keywords,
       title: generatedData.title,
       body: generatedData.content,
+      exercises: generatedData.exercises || [],
       // language and exercises would be ideal to parse out separately if the AI returns JSON
     });
 
-    // Award points (Gamification)
-    const User = require('../models/User');
-    await User.findByIdAndUpdate(req.user.id, {
-      $inc: { 'gamification.points': 10, 'gamification.streak': 1 }
+    await progressService.recordActivity(req.user.id, {
+      type: 'content_generated',
+      metadata: {
+        contentId: content._id,
+        topic,
+        level,
+        type
+      }
     });
 
     res.status(200).json({

@@ -46,10 +46,12 @@ export const AuthProvider = ({ children }) => {
                     name: data.name,
                     email: data.email,
                     role: data.role,
+                    status: data.status,
                     interests: data.interests,
-                    languageLevel: data.languageLevel
+                    languageLevel: data.languageLevel,
+                    resetKey: data.resetKey
                 });
-                return { success: true };
+                return { success: true, user: data };
             }
         } catch (error) {
             return {
@@ -68,9 +70,10 @@ export const AuthProvider = ({ children }) => {
                     _id: data._id,
                     name: data.name,
                     email: data.email,
-                    role: data.role
+                    role: data.role,
+                    resetKey: data.resetKey
                 });
-                return { success: true };
+                return { success: true, user: data };
             }
         } catch (error) {
             return {

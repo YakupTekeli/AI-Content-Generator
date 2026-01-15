@@ -24,9 +24,19 @@ app.use(express.json());
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const contentRoutes = require('./routes/contentRoutes');
+const progressRoutes = require('./routes/progressRoutes');
+const exerciseRoutes = require('./routes/exerciseRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const shareRoutes = require('./routes/shareRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/content', contentRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/exercises', exerciseRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/shares', shareRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
   res.send('AI Content Generator API is running...');

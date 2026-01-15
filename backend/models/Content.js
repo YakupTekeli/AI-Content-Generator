@@ -31,14 +31,18 @@ const ContentSchema = new mongoose.Schema({
     question: String,
     options: [String],
     correctAnswer: String,
-    explanation: String
+    explanation: String,
+    focusWord: String
   }],
   rating: {
     type: Number,
     min: 1,
     max: 5
   },
-  keywords: [String],
+  keywords: {
+    type: [String],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -46,6 +46,11 @@ const LoginPage = () => {
                             required
                         />
                     </div>
+                    <div className="text-right">
+                        <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+                            Forgot password?
+                        </Link>
+                    </div>
                     <button type="submit" className="w-full btn-primary mt-4">Log In</button>
                 </form>
                 <p className="mt-4 text-center text-sm text-gray-600">
