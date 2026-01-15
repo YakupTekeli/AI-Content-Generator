@@ -58,6 +58,18 @@ const Admin = () => {
         }
     };
 
+    const updateUserRole = async (userId, role) => {
+        setMessage('');
+        setError('');
+        try {
+            await axios.put(`/api/admin/users/${userId}/role`, { role }, authConfig());
+            setMessage('User role updated');
+            fetchAdminData();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to update user role');
+        }
+    };
+
     const deleteUser = async (userId) => {
         setMessage('');
         setError('');
@@ -185,6 +197,15 @@ const Admin = () => {
                                 <div className="text-sm text-gray-500">{user.email} • {user.role} • {user.status}</div>
                             </div>
                             <div className="flex items-center space-x-2">
+                                {user.role !== 'admin' ? (
+                                    <button onClick={() => updateUserRole(user._id, 'admin')} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded">
+                                        Make Admin
+                                    </button>
+                                ) : (
+                                    <button onClick={() => updateUserRole(user._id, 'student')} className="px-3 py-1 bg-gray-100 text-gray-700 rounded">
+                                        Make Student
+                                    </button>
+                                )}
                                 {user.status !== 'suspended' ? (
                                     <button onClick={() => updateUserStatus(user._id, 'suspended')} className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded">
                                         Suspend

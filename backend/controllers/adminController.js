@@ -71,6 +71,36 @@ exports.updateUserStatus = async (req, res) => {
     }
 };
 
+exports.updateUserRole = async (req, res) => {
+    const { role } = req.body;
+    if (!['student', 'admin'].includes(role)) {
+        return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        if (user.role === 'admin' && role !== 'admin') {
+            const adminCount = await User.countDocuments({ role: 'admin' });
+            if (adminCount <= 1) {
+                return res.status(400).json({ success: false, message: 'Cannot remove the last admin' });
+            }
+        }
+
+        user.role = role;
+        await user.save();
+
+        await logAdminAction(req.user.id, 'update_user_role', { userId: user._id, role });
+
+        res.status(200).json({ success: true, data: user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);

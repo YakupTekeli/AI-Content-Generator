@@ -2,6 +2,7 @@ const express = require('express');
 const {
     getUsers,
     updateUserStatus,
+    updateUserRole,
     deleteUser,
     getAiSettings,
     updateAiSettings,
@@ -23,6 +24,7 @@ router.use(protect, authorize('admin'));
 
 router.get('/users', getUsers);
 router.put('/users/:id/status', updateUserStatus);
+router.put('/users/:id/role', updateUserRole);
 router.delete('/users/:id', deleteUser);
 
 router.get('/ai-settings', getAiSettings);
