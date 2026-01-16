@@ -33,7 +33,7 @@ const LandingPage = () => {
                             <BookOpen className="h-6 w-6 text-pink-600" />
                         </div>
                         <h3 className="text-xl font-bold mb-2">Adaptive Levels</h3>
-                        <p className="text-gray-600">From A1 to C1, content adjusts to your specific CEFR level to ensure optimal learning.</p>
+                        <p className="text-gray-600">From A1 to C2, content adjusts to your specific CEFR level to ensure optimal learning.</p>
                     </div>
                     <div className="card">
                         <div className="bg-indigo-100 p-3 rounded-full w-fit mb-4">
