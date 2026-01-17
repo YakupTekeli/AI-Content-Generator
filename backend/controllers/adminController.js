@@ -222,6 +222,25 @@ exports.getBroadcasts = async (req, res) => {
     }
 };
 
+exports.cancelBroadcast = async (req, res) => {
+    try {
+        const notification = await Notification.findById(req.params.id);
+        if (!notification) {
+            return res.status(404).json({ success: false, message: 'Broadcast not found' });
+        }
+
+        notification.active = false;
+        notification.expiresAt = notification.expiresAt || new Date();
+        await notification.save();
+
+        await logAdminAction(req.user.id, 'cancel_broadcast', { broadcastId: notification._id });
+
+        res.status(200).json({ success: true, data: notification });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 // Reports
 const toCsv = (rows, headers) => {
     const headerRow = headers.join(',');
@@ -323,7 +342,7 @@ exports.createBackup = async (req, res) => {
 };
 
 exports.restoreBackup = async (req, res) => {
-    const { filename } = req.body;
+    const { filename, restoreUsers } = req.body;
     if (!filename) {
         return res.status(400).json({ success: false, message: 'filename is required' });
     }
@@ -333,7 +352,9 @@ exports.restoreBackup = async (req, res) => {
         const raw = await fs.readFile(filepath, 'utf8');
         const data = JSON.parse(raw);
 
-        await User.deleteMany({});
+        if (restoreUsers) {
+            await User.deleteMany({});
+        }
         await Content.deleteMany({});
         await Progress.deleteMany({});
         await ReviewItem.deleteMany({});
@@ -343,7 +364,7 @@ exports.restoreBackup = async (req, res) => {
         await GamificationSettings.deleteMany({});
         await AdminLog.deleteMany({});
 
-        if (data.users?.length) await User.insertMany(data.users, { ordered: false });
+        if (restoreUsers && data.users?.length) await User.insertMany(data.users, { ordered: false });
         if (data.contents?.length) await Content.insertMany(data.contents, { ordered: false });
         if (data.progress?.length) await Progress.insertMany(data.progress, { ordered: false });
         if (data.reviewItems?.length) await ReviewItem.insertMany(data.reviewItems, { ordered: false });
@@ -356,6 +377,31 @@ exports.restoreBackup = async (req, res) => {
         await logAdminAction(req.user.id, 'restore_backup', { filename });
 
         res.status(200).json({ success: true, message: 'Backup restored' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+exports.deleteBackup = async (req, res) => {
+    try {
+        const backup = await BackupRecord.findById(req.params.id);
+        if (!backup) {
+            return res.status(404).json({ success: false, message: 'Backup not found' });
+        }
+
+        const filepath = path.join(BACKUP_DIR, backup.filename);
+        try {
+            await fs.unlink(filepath);
+        } catch (error) {
+            if (error.code !== 'ENOENT') {
+                throw error;
+            }
+        }
+
+        await BackupRecord.deleteOne({ _id: backup._id });
+        await logAdminAction(req.user.id, 'delete_backup', { filename: backup.filename });
+
+        res.status(200).json({ success: true, message: 'Backup deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
     }

@@ -83,45 +83,47 @@ const Dashboard = () => {
             {/* Quick Actions */}
             <div className="mb-10">
                 <h2 className="text-xl font-bold mb-4 text-gray-800">Quick Actions</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Link to="/generate" className="card flex items-center justify-between group cursor-pointer hover:border-indigo-500 border border-transparent">
+                <div className="space-y-4">
+                    <Link to="/generate" className="card flex min-h-[140px] items-center justify-between group cursor-pointer border border-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg">
                         <div className="flex items-center space-x-4">
-                            <div className="bg-indigo-100 p-3 rounded-lg group-hover:bg-indigo-600 transition-colors">
-                                <Book className="h-6 w-6 text-indigo-600 group-hover:text-white" />
+                            <div className="bg-white/20 p-5 rounded-xl">
+                                <Book className="h-8 w-8 text-white" />
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Generate New Content</h3>
-                                <p className="text-sm text-gray-500">Create a story or article based on your interests</p>
+                            <div className="flex flex-col justify-center">
+                                <h3 className="font-bold text-white text-xl">Generate New Content</h3>
+                                <p className="text-base text-white/85">Create a story or article based on your interests</p>
                             </div>
                         </div>
-                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-all" />
+                        <ArrowRight className="h-6 w-6 text-white/70 opacity-0 group-hover:opacity-100 transition-all" />
                     </Link>
 
-                    <Link to="/progress" className="card flex items-center justify-between group cursor-pointer hover:border-indigo-500 border border-transparent">
-                        <div className="flex items-center space-x-4">
-                            <div className="bg-purple-100 p-3 rounded-lg group-hover:bg-purple-600 transition-colors">
-                                <Target className="h-6 w-6 text-purple-600 group-hover:text-white" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Link to="/progress" className="card flex items-center justify-between group cursor-pointer hover:border-indigo-500 border border-transparent">
+                            <div className="flex items-center space-x-4">
+                                <div className="bg-purple-100 p-3 rounded-lg group-hover:bg-purple-600 transition-colors">
+                                    <Target className="h-6 w-6 text-purple-600 group-hover:text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-800">Weekly Progress</h3>
+                                    <p className="text-sm text-gray-500">Track goals and badges</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Weekly Progress</h3>
-                                <p className="text-sm text-gray-500">Track goals and badges</p>
-                            </div>
-                        </div>
-                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all" />
-                    </Link>
+                            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-all" />
+                        </Link>
 
-                    <Link to="/history" className="card flex items-center justify-between group cursor-pointer hover:border-indigo-500 border border-transparent">
-                        <div className="flex items-center space-x-4">
-                            <div className="bg-green-100 p-3 rounded-lg group-hover:bg-green-600 transition-colors">
-                                <Star className="h-6 w-6 text-green-600 group-hover:text-white" />
+                        <Link to="/history" className="card flex items-center justify-between group cursor-pointer hover:border-indigo-500 border border-transparent">
+                            <div className="flex items-center space-x-4">
+                                <div className="bg-green-100 p-3 rounded-lg group-hover:bg-green-600 transition-colors">
+                                    <Star className="h-6 w-6 text-green-600 group-hover:text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-800">Review History</h3>
+                                    <p className="text-sm text-gray-500">Access your past readings and exercises</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-800">Review History</h3>
-                                <p className="text-sm text-gray-500">Access your past readings and exercises</p>
-                            </div>
-                        </div>
-                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 opacity-0 group-hover:opacity-100 transition-all" />
-                    </Link>
+                            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 opacity-0 group-hover:opacity-100 transition-all" />
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

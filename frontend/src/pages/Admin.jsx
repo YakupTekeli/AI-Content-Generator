@@ -10,6 +10,8 @@ const Admin = () => {
     const [backups, setBackups] = useState([]);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [backupToDelete, setBackupToDelete] = useState(null);
+    const [broadcastToCancel, setBroadcastToCancel] = useState(null);
 
     const authConfig = () => {
         const token = localStorage.getItem('token');
@@ -135,6 +137,20 @@ const Admin = () => {
         }
     };
 
+    const cancelBroadcast = async (broadcastId) => {
+        setMessage('');
+        setError('');
+        try {
+            await axios.patch(`/api/admin/broadcasts/${broadcastId}/cancel`, {}, authConfig());
+            setMessage('Broadcast canceled');
+            fetchAdminData();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to cancel broadcast');
+        } finally {
+            setBroadcastToCancel(null);
+        }
+    };
+
     const downloadReport = async (type) => {
         setError('');
         try {
@@ -174,6 +190,20 @@ const Admin = () => {
             setMessage('Backup restored');
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to restore backup');
+        }
+    };
+
+    const deleteBackup = async (backupId) => {
+        setMessage('');
+        setError('');
+        try {
+            await axios.delete(`/api/admin/backups/${backupId}`, authConfig());
+            setMessage('Backup deleted');
+            fetchAdminData();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to delete backup');
+        } finally {
+            setBackupToDelete(null);
         }
     };
 
@@ -378,8 +408,20 @@ const Admin = () => {
                 </form>
                 <div className="mt-4 space-y-2 text-sm text-gray-600">
                     {broadcasts.map((item) => (
-                        <div key={item._id} className="border rounded-lg px-3 py-2">
-                            {item.message}
+                        <div key={item._id} className="flex items-center justify-between gap-3 border rounded-lg px-3 py-2">
+                            <div className="flex flex-col">
+                                <span>{item.message}</span>
+                                {!item.active && <span className="text-xs text-gray-400">Canceled</span>}
+                            </div>
+                            {item.active && (
+                                <button
+                                    type="button"
+                                    onClick={() => setBroadcastToCancel(item._id)}
+                                    className="px-3 py-1 bg-red-50 text-red-700 rounded"
+                                >
+                                    Cancel
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -400,13 +442,72 @@ const Admin = () => {
                     {backups.map((backup) => (
                         <div key={backup._id} className="flex items-center justify-between border rounded-lg px-3 py-2">
                             <span>{backup.filename}</span>
-                            <button type="button" onClick={() => restoreBackup(backup.filename)} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">
-                                Restore
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button type="button" onClick={() => restoreBackup(backup.filename)} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded">
+                                    Restore
+                                </button>
+                                <button type="button" onClick={() => setBackupToDelete(backup._id)} className="px-3 py-1 bg-red-50 text-red-700 rounded">
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             </section>
+
+            {backupToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                        <h3 className="text-lg font-semibold text-gray-900">Delete backup?</h3>
+                        <p className="mt-2 text-sm text-gray-600">
+                            This will permanently delete the backup file and record. This action cannot be undone.
+                        </p>
+                        <div className="mt-4 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setBackupToDelete(null)}
+                                className="px-4 py-2 text-sm font-medium text-gray-600"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => deleteBackup(backupToDelete)}
+                                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {broadcastToCancel && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                        <h3 className="text-lg font-semibold text-gray-900">Cancel broadcast?</h3>
+                        <p className="mt-2 text-sm text-gray-600">
+                            This will remove the broadcast for all users. You can send a new one anytime.
+                        </p>
+                        <div className="mt-4 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setBroadcastToCancel(null)}
+                                className="px-4 py-2 text-sm font-medium text-gray-600"
+                            >
+                                Keep
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => cancelBroadcast(broadcastToCancel)}
+                                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow"
+                            >
+                                Cancel Broadcast
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

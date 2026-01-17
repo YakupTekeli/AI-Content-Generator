@@ -63,6 +63,14 @@ PORT=5000
 MONGO_URI=mongodb://localhost:27017/ai-content-generator
 JWT_SECRET=your_super_secret_jwt_key
 OPENAI_API_KEY=your_openai_api_key_here
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=your_email@example.com
+EMAIL_PASS=your_email_app_password
+EMAIL_FROM="AI Content Generator <no-reply@aicontent.local>"
+FRONTEND_URL=http://localhost:5173
+EMAIL_TLS_REJECT_UNAUTHORIZED=false
 ```
 
 Start the backend server:

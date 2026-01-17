@@ -10,11 +10,13 @@ const {
     updateGamificationSettings,
     createBroadcast,
     getBroadcasts,
+    cancelBroadcast,
     exportProgress,
     exportLogs,
     listBackups,
     createBackup,
-    restoreBackup
+    restoreBackup,
+    deleteBackup
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -35,6 +37,7 @@ router.put('/gamification-settings', updateGamificationSettings);
 
 router.post('/broadcasts', createBroadcast);
 router.get('/broadcasts', getBroadcasts);
+router.patch('/broadcasts/:id/cancel', cancelBroadcast);
 
 router.get('/reports/progress', exportProgress);
 router.get('/reports/logs', exportLogs);
@@ -42,5 +45,6 @@ router.get('/reports/logs', exportLogs);
 router.get('/backups', listBackups);
 router.post('/backups', createBackup);
 router.post('/backups/restore', restoreBackup);
+router.delete('/backups/:id', deleteBackup);
 
 module.exports = router;

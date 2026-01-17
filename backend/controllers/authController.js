@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 
 const generateResetKey = () => crypto.randomBytes(4).toString('hex').toUpperCase();
 
@@ -147,12 +148,33 @@ exports.forgotPassword = async (req, res) => {
             });
         }
 
+        const resetKey = await createUniqueResetKey();
+        user.resetKey = resetKey;
+        user.resetKeyCreatedAt = new Date();
+        await user.save();
+
+        const appUrl = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:5173';
+        const subject = 'Reset your password';
+        const text = `Your password reset key is ${resetKey}. Enter this key in the app to reset your password.\n\nIf you did not request a reset, you can ignore this email.`;
+        const html = `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+                <h2 style="margin: 0 0 12px;">Reset your password</h2>
+                <p>Your password reset key is:</p>
+                <div style="font-size: 20px; font-weight: bold; letter-spacing: 2px; margin: 12px 0;">${resetKey}</div>
+                <p>Open the app and enter the key to reset your password.</p>
+                <p><a href="${appUrl}" style="color: #4f46e5;">${appUrl}</a></p>
+                <p style="font-size: 12px; color: #6b7280;">If you did not request this, you can ignore this email.</p>
+            </div>
+        `;
+
+        await sendEmail({ to: user.email, subject, text, html });
+
         return res.status(200).json({
             success: true,
-            message: 'Email verified. Please enter your reset key.'
+            message: 'Reset email sent. Please check your inbox for the reset key.'
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: 'Server Error' });
+        return res.status(500).json({ success: false, message: error.message || 'Server Error' });
     }
 };
 
