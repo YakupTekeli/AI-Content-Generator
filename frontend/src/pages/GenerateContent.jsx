@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import { useAuth } from '../context/AuthContext';
-import { Download, Loader2, Star } from 'lucide-react';
+import { Download, Loader2, Star, Languages } from 'lucide-react';
 
 const GenerateContent = () => {
     const { user } = useAuth();
@@ -21,6 +21,9 @@ const GenerateContent = () => {
     const [ratingLoading, setRatingLoading] = useState(false);
     const [rateMessage, setRateMessage] = useState('');
     const [rateError, setRateError] = useState('');
+    const [translating, setTranslating] = useState(false);
+    const [translatedContent, setTranslatedContent] = useState(null);
+    const [translateError, setTranslateError] = useState('');
 
     const paramsKey = useMemo(() => JSON.stringify(formData), [formData]);
     const currentContent = currentIndex >= 0 ? contentHistory[currentIndex] : null;
@@ -75,6 +78,8 @@ const GenerateContent = () => {
         setError('');
         setRateMessage('');
         setRateError('');
+        setTranslatedContent(null);
+        setTranslateError('');
 
         try {
             const token = localStorage.getItem('token');
@@ -162,9 +167,33 @@ const GenerateContent = () => {
         }
     };
 
+    const handleTranslate = async (targetLanguage = 'Turkish') => {
+        if (!currentContent?._id) return;
+        setTranslating(true);
+        setTranslateError('');
+
+        try {
+            const token = localStorage.getItem('token');
+            const config = {
+                headers: { Authorization: `Bearer ${token}` }
+            };
+
+            const { data } = await axios.post(`/api/content/${currentContent._id}/translate`, { targetLanguage }, config);
+            if (data.success) {
+                setTranslatedContent(data.data.translated);
+            }
+        } catch (err) {
+            setTranslateError(err.response?.data?.message || 'Translation failed');
+        } finally {
+            setTranslating(false);
+        }
+    };
+
     const handleBack = () => {
         if (canGoBack) {
             setCurrentIndex((prev) => prev - 1);
+            setTranslatedContent(null);
+            setTranslateError('');
         }
     };
 
@@ -172,6 +201,8 @@ const GenerateContent = () => {
         if (loading) return;
         if (canGoNext) {
             setCurrentIndex((prev) => prev + 1);
+            setTranslatedContent(null);
+            setTranslateError('');
             return;
         }
         generateContent();
@@ -342,31 +373,76 @@ const GenerateContent = () => {
                                     </div>
                                 )}
 
-                                <div className="mt-6 flex flex-col gap-2">
-                                    <div className="text-sm font-medium text-gray-700">Rate this content</div>
-                                    <div className="flex items-center space-x-1">
-                                        {[1, 2, 3, 4, 5].map((value) => {
-                                            const isActive = (currentContent.rating || 0) >= value;
-                                            return (
-                                                <button
-                                                    key={value}
-                                                    type="button"
-                                                    onClick={() => handleRate(value)}
-                                                    disabled={ratingLoading}
-                                                    className="p-1"
-                                                    aria-label={`Rate ${value} out of 5`}
-                                                >
-                                                    <Star
-                                                        className={`h-5 w-5 ${isActive ? 'text-yellow-400' : 'text-gray-300'}`}
-                                                        fill={isActive ? 'currentColor' : 'none'}
-                                                    />
-                                                </button>
-                                            );
-                                        })}
+                                <div className="mt-6 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                                    {/* Rating Section */}
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium text-gray-700">Rate this content</div>
+                                        <div className="flex items-center space-x-1">
+                                            {[1, 2, 3, 4, 5].map((value) => {
+                                                const isActive = (currentContent.rating || 0) >= value;
+                                                return (
+                                                    <button
+                                                        key={value}
+                                                        type="button"
+                                                        onClick={() => handleRate(value)}
+                                                        disabled={ratingLoading}
+                                                        className="p-1"
+                                                        aria-label={`Rate ${value} out of 5`}
+                                                    >
+                                                        <Star
+                                                            className={`h-5 w-5 ${isActive ? 'text-yellow-400' : 'text-gray-300'}`}
+                                                            fill={isActive ? 'currentColor' : 'none'}
+                                                        />
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        {rateMessage && <div className="text-xs text-green-600">{rateMessage}</div>}
+                                        {rateError && <div className="text-xs text-red-600">{rateError}</div>}
                                     </div>
-                                    {rateMessage && <div className="text-xs text-green-600">{rateMessage}</div>}
-                                    {rateError && <div className="text-xs text-red-600">{rateError}</div>}
+
+                                    {/* Translation Section */}
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium text-gray-700">Translate content</div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleTranslate('Turkish')}
+                                            disabled={translating}
+                                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            {translating ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                    <span>Translating...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Languages className="h-4 w-4" />
+                                                    <span>Translate to Turkish</span>
+                                                </>
+                                            )}
+                                        </button>
+                                        {translateError && <div className="text-xs text-red-600">{translateError}</div>}
+                                    </div>
                                 </div>
+
+                                {/* Translated Content Display */}
+                                {translatedContent && (
+                                    <div className="mt-6 border-t border-gray-200 pt-6">
+                                        <h3 className="text-lg font-semibold text-purple-900 mb-4 flex items-center gap-2">
+                                            <Languages className="h-5 w-5" />
+                                            Turkish Translation
+                                        </h3>
+                                        <div className="bg-purple-50 rounded-lg p-6 border border-purple-100">
+                                            <h4 className="text-xl font-bold text-gray-900 mb-4">
+                                                {translatedContent.title}
+                                            </h4>
+                                            <div className="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
+                                                {translatedContent.body}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="mt-6 flex items-center justify-between">
                                     <button

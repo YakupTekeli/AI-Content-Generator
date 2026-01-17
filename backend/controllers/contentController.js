@@ -153,3 +153,52 @@ exports.rateContent = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+// @desc    Translate content
+// @route   POST /api/content/:id/translate
+// @access  Private
+exports.translateContent = async (req, res) => {
+  try {
+    const { targetLanguage = 'Turkish' } = req.body;
+    const translationService = require('../services/translationService');
+
+    const content = await Content.findById(req.params.id);
+
+    if (!content) {
+      return res.status(404).json({ success: false, message: 'Content not found' });
+    }
+
+    // Ensure user owns this content
+    if (content.user.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(401).json({ success: false, message: 'Not authorized to translate this content' });
+    }
+
+    // Translate the content body
+    const translatedText = await translationService.translate(content.body, targetLanguage);
+
+    // Also translate the title
+    const translatedTitle = await translationService.translate(content.title, targetLanguage);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        original: {
+          title: content.title,
+          body: content.body
+        },
+        translated: {
+          title: translatedTitle,
+          body: translatedText
+        },
+        targetLanguage
+      }
+    });
+  } catch (error) {
+    console.error('Translation error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Translation failed'
+    });
+  }
+};
+
