@@ -1,25 +1,25 @@
-# 🚀 AI Content Generator
+# AI Content Generator
 
 An advanced, full-stack web application designed to revolutionize English language learning. By leveraging Artificial Intelligence, this platform generates personalized reading materials, stories, and exercises tailored specifically to the user's interests and proficiency level (A1-C2).
 
-## 🌟 Key Features
+## Key Features
 
-### 👤 User Experience
+### User Experience
 -   **Personalized Profile**: Users can set their English proficiency level (CEFR standards) and select specific interests (e.g., Technology, Sports, Arts).
 -   **Gamification**: Earn points and maintain daily streaks to stay motivated.
 -   **Responsive Design**: A premium, mobile-first interface built with modern aesthetic principles (Glassmorphism, Gradients).
 
-### 🤖 AI-Powered Learning
+### AI-Powered Learning
 -   **Dynamic Content Generation**: Uses OpenAI's GPT models to create unique articles, stories, and dialogues on demand.
 -   **Smart Adaptation**: Content difficulty automatically adjusts to match the user's selected language level.
 -   **Interactive Exercises**: Generates comprehension questions and exercises based on the created text.
 
-### 🛠 Technical Capabilities
+### Technical Capabilities
 -   **Secure Authentication**: JWT-based authentication with password hashing (Bcrypt).
 -   **Data Persistence**: robust MongoDB database to store user profiles, history, and progress.
 -   **History Tracking**: Users can revisit previously generated content at any time.
 
-## 🏗️ Technology Stack
+## Technology Stack
 
 ### Backend (API)
 -   **Runtime**: Node.js
@@ -35,7 +35,7 @@ An advanced, full-stack web application designed to revolutionize English langua
 -   **HTTP Client**: Axios
 -   **Icons**: Lucide React
 
-## ⚙️ Installation & Setup
+## Installation & Setup
 
 Follow these steps to run the project locally.
 
